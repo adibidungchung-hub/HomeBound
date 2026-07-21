@@ -183,11 +183,12 @@ function drawBackground(ctx: CanvasRenderingContext2D, state: GameState, images:
       ctx.fillRect(0, 0, CANVAS_WIDTH, GROUND_Y);
     }
 
-    // Forest tree silhouette — lowest decorative layer (very slow parallax, dim opacity)
+    // Forest tree silhouette — flush with ground, very slow parallax
     if (images.forestTrees) {
       ctx.globalAlpha = 0.28;
-      const ftH = 120;
-      drawTiled(ctx, images.forestTrees, scroll * 0.10, GROUND_Y - ftH + 5, ftH, undefined, 1600);
+      const ftH = 130;
+      // bottom of image = GROUND_Y; speed = 30% of previous (slowed 70%)
+      drawTiled(ctx, images.forestTrees, scroll * 0.03, GROUND_Y - ftH, ftH);
       ctx.globalAlpha = 1;
     }
 
