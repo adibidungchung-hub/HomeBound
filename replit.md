@@ -1,45 +1,43 @@
-# [Project name]
+# Homebound
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
-
-## Run & Operate
-
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+A Geometry Dash-style browser platformer game built with React + Vite and an Express API backend.
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- **Frontend**: React 19, Vite, Tailwind CSS v4, Wouter (routing), Framer Motion
+- **Backend**: Express 5, TypeScript, Pino logging
+- **Monorepo**: pnpm workspaces
+- **Shared libs**: `lib/api-client-react`, `lib/api-spec`, `lib/api-zod`, `lib/db`
 
-## Where things live
+## Structure
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+```
+artifacts/
+  geometry-dash/   # React + Vite game frontend
+  api-server/      # Express API server
+lib/
+  api-client-react/  # React Query hooks for API
+  api-spec/          # OpenAPI spec
+  api-zod/           # Zod schemas for API
+  db/                # Database layer (Drizzle ORM)
+```
 
-## Architecture decisions
+## Game Features
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Multiple levels with parallax backgrounds and music
+- Skins system (8+ character skins)
+- Endless mode
+- Full audio (SFX + background music)
+- Pages: Home, Level Select, Game, Skins, Endless Game, Ending Cutscene
 
-## Product
+## Running Locally
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+```bash
+pnpm install
+```
 
-## User preferences
+Workflows:
+- **Frontend** (`artifacts/geometry-dash: web`): `pnpm --filter @workspace/geometry-dash run dev`
+- **API Server** (`artifacts/api-server: API Server`): `pnpm --filter @workspace/api-server run dev`
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+## User Preferences
