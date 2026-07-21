@@ -1,44 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const TITLE_F = "'Lilita One', cursive";
-const BODY_F = "'Nunito', sans-serif";
 
-type Phase = "walking" | "hugging" | "flash" | "text" | "button";
+type Phase = "video" | "white" | "text" | "button";
 
 interface Props {
   onHome: () => void;
 }
 
 export default function EndingCutscene({ onHome }: Props) {
-  const [phase, setPhase] = useState<Phase>("walking");
+  const [phase, setPhase] = useState<Phase>("video");
   const [textOpacity, setTextOpacity] = useState(0);
   const [btnOpacity, setBtnOpacity] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const ts = [
-      setTimeout(() => setPhase("hugging"), 3000),
-      setTimeout(() => setPhase("flash"), 4600),
-      setTimeout(() => setPhase("text"), 5700),
-      setTimeout(() => setTextOpacity(1), 5900),
-      setTimeout(() => setPhase("button"), 7800),
-      setTimeout(() => setBtnOpacity(1), 8000),
-    ];
-    return () => ts.forEach(clearTimeout);
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.play().catch(() => {});
+
+    const handleEnded = () => {
+      setPhase("white");
+      setTimeout(() => setPhase("text"), 600);
+      setTimeout(() => setTextOpacity(1), 800);
+      setTimeout(() => setPhase("button"), 2800);
+      setTimeout(() => setBtnOpacity(1), 3000);
+    };
+
+    video.addEventListener("ended", handleEnded);
+    return () => video.removeEventListener("ended", handleEnded);
   }, []);
 
-  const isFlash = phase === "flash" || phase === "text" || phase === "button";
-
-  const dadLeft = phase === "walking" ? "108%" : "21%";
-  const momLeft = phase === "walking" ? "124%" : "28%";
-
-  const dadTransition =
-    phase === "hugging"
-      ? "left 1.1s cubic-bezier(0.4,0,0.2,1)"
-      : "left 2.9s cubic-bezier(0.25,0.46,0.45,0.94)";
-  const momTransition =
-    phase === "hugging"
-      ? "left 1.1s cubic-bezier(0.4,0,0.2,1) 0.1s"
-      : "left 2.9s cubic-bezier(0.25,0.46,0.45,0.94) 0.25s";
+  const showWhite = phase !== "video";
 
   return (
     <div
@@ -46,56 +40,40 @@ export default function EndingCutscene({ onHome }: Props) {
         position: "absolute",
         inset: 0,
         zIndex: 25,
-        pointerEvents: "none",
         overflow: "hidden",
+        background: "#000",
       }}
     >
-      {!isFlash && (
-        <>
-          <img
-            src="/parent-dad.png"
-            alt=""
-            style={{
-              position: "absolute",
-              left: dadLeft,
-              top: "59%",
-              width: "14%",
-              transition: dadTransition,
-              mixBlendMode: "screen",
-              imageRendering: "pixelated",
-            }}
-          />
-          <img
-            src="/parent-mom.png"
-            alt=""
-            style={{
-              position: "absolute",
-              left: momLeft,
-              top: "59%",
-              width: "14%",
-              transition: momTransition,
-              mixBlendMode: "screen",
-              imageRendering: "pixelated",
-            }}
-          />
-        </>
-      )}
+      {/* Video */}
+      <video
+        ref={videoRef}
+        src="/ending-scene.mp4"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: phase === "video" ? 1 : 0,
+          transition: "opacity 0.6s ease-in-out",
+        }}
+        playsInline
+        muted={false}
+      />
 
+      {/* White overlay → text */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(135deg, #FFF8E8 0%, #FFE8C8 100%)",
-          opacity: isFlash ? 1 : 0,
-          transition:
-            phase === "flash"
-              ? "opacity 0.75s ease-in"
-              : "none",
+          background: "#ffffff",
+          opacity: showWhite ? 1 : 0,
+          transition: "opacity 0.6s ease-in-out",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          pointerEvents: isFlash ? "auto" : "none",
+          pointerEvents: showWhite ? "auto" : "none",
           gap: 0,
         }}
       >
