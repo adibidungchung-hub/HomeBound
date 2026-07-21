@@ -201,9 +201,9 @@ function drawBackground(ctx: CanvasRenderingContext2D, state: GameState, images:
     }
 
     if (images.tree2) {
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = 0.8;
       drawPalmTreeImages(ctx, images.tree2, scroll * 0.55, GROUND_Y + 10, 100, 240);
-      ctx.globalAlpha = 0.7;
+      ctx.globalAlpha = 1;
       drawPalmTreeImages(ctx, images.tree2, scroll * 0.75 + 140, GROUND_Y + 10, 200, 280);
       ctx.globalAlpha = 1;
     }
