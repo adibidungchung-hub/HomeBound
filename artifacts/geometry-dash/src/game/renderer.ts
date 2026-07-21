@@ -31,6 +31,8 @@ export interface BackgroundImages {
   bg3Mountains: HTMLImageElement | null;
   bg3Hills: HTMLImageElement | null;
   bg3Clouds: HTMLImageElement | null;
+  // Level 2 extra: forest silhouette layer
+  forestTrees: CanvasImageSource | null;
 }
 
 function drawGlow(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color: string) {
@@ -179,6 +181,14 @@ function drawBackground(ctx: CanvasRenderingContext2D, state: GameState, images:
       grad.addColorStop(1, "#7ec87e");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, CANVAS_WIDTH, GROUND_Y);
+    }
+
+    // Forest tree silhouette — lowest decorative layer (very slow parallax, dim opacity)
+    if (images.forestTrees) {
+      ctx.globalAlpha = 0.28;
+      const ftH = 120;
+      drawTiled(ctx, images.forestTrees, scroll * 0.10, GROUND_Y - ftH + 5, ftH, undefined, 1600);
+      ctx.globalAlpha = 1;
     }
 
     if (images.cloud2) {
@@ -856,7 +866,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, state: GameState, playerImg: 
     const imgH = imgEl.height || 1;
     const aspect = imgW / imgH;
     const drawH = PLAYER_SIZE * 2.0;
-    const drawW = drawH * aspect;
+    const drawW = drawH * aspect * 0.9; // 90% width → squarer character
     const drawY = -drawH / 2;
     ctx.shadowColor = skinColor + "99";
     ctx.shadowBlur = 18;

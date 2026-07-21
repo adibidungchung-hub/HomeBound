@@ -29,8 +29,8 @@ export function saveLevelProgress(level: number, progressFraction: number, compl
     all[key] = {
       best: Math.max(current.best, bestPct),
       completed: current.completed || completed,
-      // Always accumulate pebbles — every run's haul counts regardless of completion
-      pebbles: (current.pebbles ?? 0) + pebbles,
+      // Only award pebbles when the level is completed
+      pebbles: (current.pebbles ?? 0) + (completed ? pebbles : 0),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
   } catch {

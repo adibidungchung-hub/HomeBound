@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { soundManager } from "../game/sound";
 
 const TITLE_F = "'Lilita One', cursive";
 
@@ -15,12 +16,21 @@ export default function EndingCutscene({ onHome }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    // Play warm ambient tone during the video
+    soundManager.playWarmTone();
+
     const video = videoRef.current;
     if (!video) return;
 
     video.play().catch(() => {});
 
     const handleEnded = () => {
+      // Fade warm tone, then fade in home music
+      soundManager.stopWarmTone();
+      setTimeout(() => {
+        soundManager.loadMusic("/music-home.mp3");
+        soundManager.playMusic();
+      }, 1000);
       setPhase("white");
       setTimeout(() => setPhase("text"), 600);
       setTimeout(() => setTextOpacity(1), 800);
@@ -29,7 +39,10 @@ export default function EndingCutscene({ onHome }: Props) {
     };
 
     video.addEventListener("ended", handleEnded);
-    return () => video.removeEventListener("ended", handleEnded);
+    return () => {
+      video.removeEventListener("ended", handleEnded);
+      soundManager.stopWarmTone();
+    };
   }, []);
 
   const showWhite = phase !== "video";
@@ -123,7 +136,7 @@ export default function EndingCutscene({ onHome }: Props) {
           }}
         >
           <button
-            onClick={onHome}
+            onClick={() => { soundManager.stopWarmTone(); soundManager.stopMusic(); onHome(); }}
             style={{
               fontFamily: TITLE_F,
               fontSize: "clamp(11px, 1.8vw, 17px)",

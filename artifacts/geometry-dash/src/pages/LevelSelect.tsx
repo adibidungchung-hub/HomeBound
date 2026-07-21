@@ -203,8 +203,6 @@ export default function LevelSelect() {
     soundManager.playSfx("btn");
     soundManager.fadeMusic(350);
     setTimeout(() => {
-      soundManager.loadMusic("/music-level2.mp3");
-      soundManager.playMusic();
       setLeaving(true);
       setTimeout(() => navigate("/endless"), 50);
     }, 300);
@@ -460,43 +458,55 @@ export default function LevelSelect() {
           })}
         </div>
 
-        {/* Endless mode — slim pill below map cards */}
-        {LEVELS.every(lv => getLevelProgress(lv.id).completed) && (
-          <div
-            style={{
-              marginTop: 20, width: "100%",
-              display: "flex", justifyContent: "center",
-              animation: leaving ? "titleFlyOut 0.32s ease forwards" : mounted ? "titleFlyIn 0.45s 0.35s ease backwards" : "none",
-            }}
-          >
-            <button
-              onClick={handleEndlessSelect}
+        {/* Endless mode — always visible, locked until all 3 maps complete */}
+        {(() => {
+          const allDone = LEVELS.every(lv => getLevelProgress(lv.id).completed);
+          return (
+            <div
               style={{
-                width: "50%", maxWidth: 400, padding: "10px 20px",
-                background: "linear-gradient(135deg, rgba(70,45,130,0.92) 0%, rgba(40,25,90,0.92) 100%)",
-                border: "1.5px solid rgba(170,110,255,0.45)",
-                borderRadius: 14, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                boxShadow: "0 4px 0 rgba(0,0,0,0.5)",
-                transition: "filter 0.15s, transform 0.15s",
+                marginTop: 20, width: "100%",
+                display: "flex", justifyContent: "center",
+                animation: leaving ? "titleFlyOut 0.32s ease forwards" : mounted ? "titleFlyIn 0.45s 0.35s ease backwards" : "none",
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.18)"; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.filter = ""; (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
-              onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(1px)"; }}
-              onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
             >
-              <span style={{ fontFamily: TITLE, fontSize: 18, color: "#C8A0FF", letterSpacing: 1, textShadow: "0 1px 6px rgba(160,80,255,0.5)", lineHeight: 1 }}>∞</span>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2 }}>
-                <span style={{ fontFamily: TITLE, fontSize: 13, color: "#C8A0FF", letterSpacing: 2, textShadow: "0 1px 6px rgba(160,80,255,0.4)" }}>{t.endlessMode}</span>
-                {endlessBest > 0 && (
-                  <span style={{ fontFamily: BODY, fontWeight: "700", fontSize: 9, color: "rgba(200,170,255,0.75)", letterSpacing: 1 }}>
-                    ⬡ Best: {endlessBest.toLocaleString()} m
-                  </span>
-                )}
-              </div>
-            </button>
-          </div>
-        )}
+              <button
+                onClick={allDone ? handleEndlessSelect : undefined}
+                style={{
+                  width: "50%", maxWidth: 400, padding: "10px 20px",
+                  background: allDone
+                    ? "linear-gradient(135deg, rgba(70,45,130,0.92) 0%, rgba(40,25,90,0.92) 100%)"
+                    : "rgba(40,40,50,0.85)",
+                  border: allDone ? "1.5px solid rgba(170,110,255,0.45)" : "1.5px solid rgba(100,100,120,0.3)",
+                  borderRadius: 14, cursor: allDone ? "pointer" : "default",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  boxShadow: "0 4px 0 rgba(0,0,0,0.5)",
+                  transition: "filter 0.15s, transform 0.15s",
+                  opacity: allDone ? 1 : 0.6,
+                }}
+                onMouseEnter={e => { if (allDone) { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.18)"; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; } }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.filter = ""; (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
+                onMouseDown={e => { if (allDone) (e.currentTarget as HTMLButtonElement).style.transform = "translateY(1px)"; }}
+                onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
+              >
+                <span style={{ fontFamily: TITLE, fontSize: 18, color: allDone ? "#C8A0FF" : "#888", letterSpacing: 1, lineHeight: 1 }}>∞</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2 }}>
+                  <span style={{ fontFamily: TITLE, fontSize: 13, color: allDone ? "#C8A0FF" : "#888", letterSpacing: 2 }}>{t.endlessMode}</span>
+                  {allDone ? (
+                    endlessBest > 0 && (
+                      <span style={{ fontFamily: BODY, fontWeight: "700", fontSize: 9, color: "rgba(200,170,255,0.75)", letterSpacing: 1 }}>
+                        ⬡ Best: {endlessBest.toLocaleString()} m
+                      </span>
+                    )
+                  ) : (
+                    <span style={{ fontFamily: BODY, fontWeight: "700", fontSize: 9, color: "rgba(160,160,180,0.75)", letterSpacing: 1 }}>
+                      🔒 Complete all 3 maps to unlock
+                    </span>
+                  )}
+                </div>
+              </button>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Settings gear button — bottom right */}

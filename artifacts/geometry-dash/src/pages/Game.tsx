@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import EndingCutscene from "./EndingCutscene";
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../game/constants";
+import { CANVAS_WIDTH, CANVAS_HEIGHT, PLAYER_X, PLAYER_SIZE } from "../game/constants";
 import { createInitialState, jump, update } from "../game/engine";
 import { render } from "../game/renderer";
 import type { GameState } from "../game/types";
@@ -259,6 +259,8 @@ export default function Game() {
   const [finalScore, setFinalScore] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isEndingCutscene, setIsEndingCutscene] = useState(false);
+  const fadingToBlackRef = useRef(false);
+  const [fadeToBlack, setFadeToBlack] = useState(false);
   const wasDeadRef = useRef(false);
   const prevScoreRef = useRef(0);
   const landedMeteorsRef = useRef<Set<number>>(new Set());
@@ -283,6 +285,7 @@ export default function Game() {
     sky2: null, floor2: null, tree2: null, cloud2: null,
     rockLow: null, rockTall: null, meteorImg: null, craterImg: null, bgVolcanic: null,
     bg3Sky: null, bg3Mountains: null, bg3Hills: null, bg3Clouds: null,
+    forestTrees: null,
   });
 
   useEffect(() => {
@@ -297,8 +300,9 @@ export default function Game() {
       loadImage(rockLowUrl), loadImage(rockTallUrl), loadImage(meteorUrl), loadImage(bgVolcanicUrl),
       loadImage(craterUrl),
       loadImage(bg3SkyUrl), loadImage(bg3MountainsUrl), loadImage(bg3HillsUrl), loadImage(bg3CloudsUrl),
+      loadImage("/forest-trees-silhouette.png"),
       ...seaFrameUrls.map(loadImage),
-    ]).then(([sky, sun, sea, trees, trees1, cloud, floor, playerRaw, shell1Raw, shell2Raw, palmTreeRaw, collectibleRaw, sky2, floor2, tree2Raw, cloud2Raw, mushroomRaw, rockLowRaw, rockTallRaw, meteorRaw, bgVolcanicRaw, craterRaw, bg3SkyRaw, bg3MountainsRaw, bg3HillsRaw, bg3CloudsRaw, ...seaFrames]) => {
+    ]).then(([sky, sun, sea, trees, trees1, cloud, floor, playerRaw, shell1Raw, shell2Raw, palmTreeRaw, collectibleRaw, sky2, floor2, tree2Raw, cloud2Raw, mushroomRaw, rockLowRaw, rockTallRaw, meteorRaw, bgVolcanicRaw, craterRaw, bg3SkyRaw, bg3MountainsRaw, bg3HillsRaw, bg3CloudsRaw, forestTreesRaw, ...seaFrames]) => {
       imagesRef.current = {
         sky, sun, sea,
         seaFrames: seaFrames as HTMLImageElement[],
@@ -322,6 +326,7 @@ export default function Game() {
         bg3Mountains: bg3MountainsRaw as HTMLImageElement,
         bg3Hills: bg3HillsRaw as HTMLImageElement,
         bg3Clouds: removeBlackBg(bg3CloudsRaw) as unknown as HTMLImageElement,
+        forestTrees: removeWhiteBg(forestTreesRaw),
       };
       soundManager.loadMusic(
         level === 3 ? "/music-level3.mp3" : level === 2 ? "/music-level2.mp3" : "/music-level1.mp3"
@@ -467,14 +472,24 @@ export default function Game() {
           progressSavedRef.current = true;
         }
         if (levelRef.current === 3) {
-          soundManager.loadMusic("/music-home.mp3");
-          soundManager.playMusic();
-          isEndingRef.current = true;
-          setIsEndingCutscene(true);
+          soundManager.fadeMusic(2000); // slow fade during walk-off
+          // walk-off + fade-to-black is detected below in the loop
         } else {
           soundManager.playSfx("complete");
           soundManager.fadeMusic(1000);
           setIsComplete(true);
+        }
+      }
+      // Level 3: detect player walking off right edge → fade to black → show video
+      if (s.isComplete && levelRef.current === 3 && !isEndingRef.current && !fadingToBlackRef.current) {
+        const playerRightEdge = PLAYER_X + s.completionPlayerOffsetX + PLAYER_SIZE;
+        if (playerRightEdge > CANVAS_WIDTH) {
+          fadingToBlackRef.current = true;
+          setFadeToBlack(true);
+          setTimeout(() => {
+            isEndingRef.current = true;
+            setIsEndingCutscene(true);
+          }, 1500);
         }
       }
       if (s.isStarted && !isStartedRef.current) {
@@ -620,9 +635,17 @@ export default function Game() {
         )}
         {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} accentColor={accentBg} />}
 
+        {/* Black fade overlay — level 3 walk-off to video */}
+        {fadeToBlack && !isEndingCutscene && (
+          <>
+            <style>{`@keyframes fadeInBlack { from { opacity: 0; } to { opacity: 1; } }`}</style>
+            <div style={{ position: 'absolute', inset: 0, background: '#000', zIndex: 24, animation: 'fadeInBlack 1.5s ease-in forwards' }} />
+          </>
+        )}
+
         {/* Ending cutscene — level 3 only */}
         {isEndingCutscene && (
-          <EndingCutscene onHome={() => { soundManager.stopMusic(); navigate("/"); }} />
+          <EndingCutscene onHome={() => { navigate("/"); }} />
         )}
 
         {/* Win screen overlay */}

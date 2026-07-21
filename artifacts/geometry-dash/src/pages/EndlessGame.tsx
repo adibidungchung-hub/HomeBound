@@ -195,8 +195,9 @@ export default function EndlessGame() {
       loadImage(rockLowUrl), loadImage(rockTallUrl), loadImage(meteorUrl), loadImage(bgVolcanicUrl),
       loadImage(craterUrl),
       loadImage(bg3SkyUrl), loadImage(bg3MountainsUrl), loadImage(bg3HillsUrl), loadImage(bg3CloudsUrl),
+      loadImage("/forest-trees-silhouette.png"),
       ...seaFrameUrls.map(loadImage),
-    ]).then(([sky, sun, sea, trees, trees1, cloud, floor, playerRaw, shell1Raw, shell2Raw, palmTreeRaw, collectibleRaw, sky2, floor2, tree2Raw, cloud2Raw, mushroomRaw, rockLowRaw, rockTallRaw, meteorRaw, bgVolcanicRaw, craterRaw, bg3SkyRaw, bg3MountainsRaw, bg3HillsRaw, bg3CloudsRaw, ...seaFrames]) => {
+    ]).then(([sky, sun, sea, trees, trees1, cloud, floor, playerRaw, shell1Raw, shell2Raw, palmTreeRaw, collectibleRaw, sky2, floor2, tree2Raw, cloud2Raw, mushroomRaw, rockLowRaw, rockTallRaw, meteorRaw, bgVolcanicRaw, craterRaw, bg3SkyRaw, bg3MountainsRaw, bg3HillsRaw, bg3CloudsRaw, forestTreesRaw, ...seaFrames]) => {
       imagesRef.current = {
         sky, sun, sea,
         seaFrames: seaFrames as HTMLImageElement[],
@@ -220,12 +221,13 @@ export default function EndlessGame() {
         bg3Mountains: bg3MountainsRaw as HTMLImageElement,
         bg3Hills: bg3HillsRaw as HTMLImageElement,
         bg3Clouds: removeBlackBg(bg3CloudsRaw) as unknown as HTMLImageElement,
+        forestTrees: removeWhiteBg(forestTreesRaw),
       };
       soundManager.loadSfx("jump", "/sfx-jump.mp3");
       soundManager.loadSfx("collect", "/sfx-collect.mp3", 4, 1.5);
       soundManager.loadSfx("btn", "/sfx-btn.mp3", 4, 1.3);
       setIsLoaded(true);
-      soundManager.playMusic();
+      soundManager.playJazzLoop();
     });
   }, []);
 
@@ -320,7 +322,7 @@ export default function EndlessGame() {
       }
       if (s.isDead && !wasDeadRef.current) {
         soundManager.playSynthDeath();
-        soundManager.fadeMusic(1400);
+        soundManager.stopJazzLoop();
         const finalDist = Math.floor(s.worldOffset / 50);
         setScore(s.score);
         setDistance(finalDist);
@@ -337,7 +339,7 @@ export default function EndlessGame() {
   }, []);
 
   useEffect(() => {
-    return () => { soundManager.stopMusic(); };
+    return () => { soundManager.stopJazzLoop(); };
   }, []);
 
   useEffect(() => {
@@ -372,7 +374,7 @@ export default function EndlessGame() {
     setIsStarted(false);
     setScore(0);
     setDistance(0);
-    soundManager.restartMusic();
+    soundManager.playJazzLoop();
   }, []);
 
   const handleResume = useCallback(() => {
@@ -382,7 +384,7 @@ export default function EndlessGame() {
   }, []);
 
   const handleGoHome = useCallback(() => {
-    soundManager.stopMusic();
+    soundManager.stopJazzLoop();
     navigate("/levels");
   }, [navigate]);
 
