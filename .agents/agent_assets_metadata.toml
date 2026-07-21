@@ -1,0 +1,56 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "GCcneBDTt6SVo9qOZKlgT"
+uri = "file://artifacts/geometry-dash/public/music-level3.mp3"
+type = "audio"
+title = "level3_ambient"
+
+[[outputs]]
+id = "MvI7D9fEMQxwoEVJmVDqu"
+uri = "file://artifacts/geometry-dash/public/music-level2.mp3"
+type = "audio"
+title = "forest_level"
+
+[[outputs]]
+id = "Yi-pS3Ue75s79d5hRPftN"
+uri = "file://artifacts/geometry-dash/public/music-level1.mp3"
+type = "audio"
+title = "level1_hawaii"
+
+[[outputs]]
+id = "DR2pqVs7s55efyff31sP6"
+uri = "file://artifacts/geometry-dash/public/sfx-collect.mp3"
+type = "audio"
+title = "collect"
+
+[[outputs]]
+id = "6ifuYVf52FldWsKvtheR4"
+uri = "file://artifacts/geometry-dash/public/sfx-death.mp3"
+type = "audio"
+title = "death"
+
+[[outputs]]
+id = "DH-cKQtch6pCndeIOuMrp"
+uri = "file://artifacts/geometry-dash/public/sfx-complete.mp3"
+type = "audio"
+title = "level_complete"
+
+[[outputs]]
+id = "-kMqo5LoEqNVqlkNNqAy2"
+uri = "file://artifacts/geometry-dash/public/sfx-jump.mp3"
+type = "audio"
+title = "jump"
+
+[[outputs]]
+id = "lUgs2nUiOroNOKOXT0Ao_"
+uri = "file://artifacts/geometry-dash/public/sfx-btn.mp3"
+type = "audio"
+title = "btn_loud"
+
+[[outputs]]
+id = "7Ij0qDKA_SWddM8n9NOkU"
+uri = "file://artifacts/geometry-dash/public/music-home.mp3"
+type = "audio"
+title = "home_lofi_fun"

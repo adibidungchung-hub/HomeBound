@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Geometry Dash"
+version = "1.0.0"
+id = "artifacts/geometry-dash"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20937
+
+[services.development]
+run = "pnpm --filter @workspace/geometry-dash run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/geometry-dash", "run", "build" ]
+publicDir = "artifacts/geometry-dash/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20937"
+BASE_PATH = "/"
