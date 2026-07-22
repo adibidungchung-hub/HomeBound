@@ -185,8 +185,8 @@ function drawBackground(ctx: CanvasRenderingContext2D, state: GameState, images:
 
     // Forest tree silhouette — flush with ground, very slow parallax
     if (images.forestTrees) {
-      ctx.globalAlpha = 0.70;
-      const ftH = 210;
+      ctx.globalAlpha = 0.30;
+      const ftH = 270;
       // bottom of image = GROUND_Y; speed = 30% of previous (slowed 70%)
       drawTiled(ctx, images.forestTrees, scroll * 0.03, GROUND_Y - ftH, ftH);
       ctx.globalAlpha = 1;
@@ -201,7 +201,7 @@ function drawBackground(ctx: CanvasRenderingContext2D, state: GameState, images:
     }
 
     if (images.tree2) {
-      ctx.globalAlpha = 0.8;
+      ctx.globalAlpha = 0.6;
       drawPalmTreeImages(ctx, images.tree2, scroll * 0.55, GROUND_Y + 10, 100, 240);
       ctx.globalAlpha = 1;
       drawPalmTreeImages(ctx, images.tree2, scroll * 0.75 + 140, GROUND_Y + 10, 200, 280);
@@ -235,16 +235,16 @@ function drawBackground(ctx: CanvasRenderingContext2D, state: GameState, images:
 
     // Layer 1.5: Purple clouds (very slow parallax, above mountains)
     if (images.bg3Clouds) {
-      const cloudH = Math.round(GROUND_Y * 0.88);
-      drawTiled(ctx, images.bg3Clouds, scroll * 0.05, -20, cloudH, undefined, 3200);
+      const cloudH = Math.round(GROUND_Y * 1.08);
+      drawTiled(ctx, images.bg3Clouds, scroll * 0.05, -40, cloudH, undefined, 3200);
       ctx.globalAlpha = 0.55;
-      drawTiled(ctx, images.bg3Clouds, scroll * 0.035 + 350, 30, Math.round(cloudH * 0.75), undefined, 3800);
+      drawTiled(ctx, images.bg3Clouds, scroll * 0.035 + 350, 20, Math.round(cloudH * 0.80), undefined, 3800);
       ctx.globalAlpha = 1;
     }
 
-    // Layer 2: Mountains / volcanoes (halved parallax: 0.18 → 0.09)
+    // Layer 2: Mountains / volcanoes
     if (images.bg3Mountains) {
-      const mtH = Math.round(GROUND_Y * 0.68);
+      const mtH = Math.round(GROUND_Y * 0.88);
       drawTiled(ctx, images.bg3Mountains, scroll * 0.09, GROUND_Y - mtH + 12, mtH, CANVAS_WIDTH);
     }
 
@@ -1224,7 +1224,7 @@ function drawWinScreen(ctx: CanvasRenderingContext2D, state: GameState, frameCou
   ctx.shadowColor = "#ffd700";
   ctx.shadowBlur = 10;
   ctx.fillStyle = "#ffe090";
-  ctx.fillText(`◉  ${state.score} / 30 pebbles collected`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+  ctx.fillText(`◉  ${state.score} pebbles collected`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
 
   // Buttons drawn on canvas (click zones handled in React overlay)
   const btnY = CANVAS_HEIGHT / 2 + 55;

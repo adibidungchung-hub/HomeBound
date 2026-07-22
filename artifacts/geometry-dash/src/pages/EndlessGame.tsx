@@ -197,7 +197,7 @@ export default function EndlessGame() {
       loadImage(bg3SkyUrl), loadImage(bg3MountainsUrl), loadImage(bg3HillsUrl), loadImage(bg3CloudsUrl),
       loadImage("/forest-trees-silhouette.png"),
       ...seaFrameUrls.map(loadImage),
-    ]).then(([sky, sun, sea, trees, trees1, cloud, floor, playerRaw, shell1Raw, shell2Raw, palmTreeRaw, collectibleRaw, sky2, floor2, tree2Raw, cloud2Raw, mushroomRaw, rockLowRaw, rockTallRaw, meteorRaw, bgVolcanicRaw, craterRaw, bg3SkyRaw, bg3MountainsRaw, bg3HillsRaw, bg3CloudsRaw, forestTreesRaw, ...seaFrames]) => {
+    ]).then(async ([sky, sun, sea, trees, trees1, cloud, floor, playerRaw, shell1Raw, shell2Raw, palmTreeRaw, collectibleRaw, sky2, floor2, tree2Raw, cloud2Raw, mushroomRaw, rockLowRaw, rockTallRaw, meteorRaw, bgVolcanicRaw, craterRaw, bg3SkyRaw, bg3MountainsRaw, bg3HillsRaw, bg3CloudsRaw, forestTreesRaw, ...seaFrames]) => {
       imagesRef.current = {
         sky, sun, sea,
         seaFrames: seaFrames as HTMLImageElement[],
@@ -223,9 +223,11 @@ export default function EndlessGame() {
         bg3Clouds: removeBlackBg(bg3CloudsRaw) as unknown as HTMLImageElement,
         forestTrees: removeWhiteBg(forestTreesRaw),
       };
-      soundManager.loadSfx("jump", "/sfx-jump.mp3");
-      soundManager.loadSfx("collect", "/sfx-collect.mp3", 4, 1.5);
-      soundManager.loadSfx("btn", "/sfx-btn.mp3", 4, 1.3);
+      await Promise.all([
+        soundManager.loadSfxAsync("jump", "/sfx-jump.mp3"),
+        soundManager.loadSfxAsync("collect", "/sfx-collect.mp3", 4, 1.5),
+        soundManager.loadSfxAsync("btn", "/sfx-btn.mp3", 4, 1.3),
+      ]);
       setIsLoaded(true);
       soundManager.playJazzLoop();
     });

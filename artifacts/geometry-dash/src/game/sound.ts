@@ -121,6 +121,41 @@ class SoundManager {
     this.sfxPool.set(name, pool);
   }
 
+  /** Like loadMusic but returns a Promise that resolves when the audio is ready to play (with timeout fallback) */
+  loadMusicAsync(src: string): Promise<void> {
+    this.loadMusic(src);
+    return new Promise<void>((resolve) => {
+      const a = this.music;
+      if (!a) { resolve(); return; }
+      if (a.readyState >= 3) { resolve(); return; }
+      const timer = setTimeout(resolve, 6000);
+      const onReady = () => {
+        clearTimeout(timer);
+        a.removeEventListener("canplaythrough", onReady);
+        resolve();
+      };
+      a.addEventListener("canplaythrough", onReady);
+    });
+  }
+
+  /** Like loadSfx but returns a Promise that resolves when the first pool element is ready (with timeout fallback) */
+  loadSfxAsync(name: string, src: string, poolSize = 4, multiplier = 1): Promise<void> {
+    this.loadSfx(name, src, poolSize, multiplier);
+    const pool = this.sfxPool.get(name);
+    if (!pool || pool.length === 0) return Promise.resolve();
+    const first = pool[0];
+    return new Promise<void>((resolve) => {
+      if (first.readyState >= 3) { resolve(); return; }
+      const timer = setTimeout(resolve, 4000);
+      const onReady = () => {
+        clearTimeout(timer);
+        first.removeEventListener("canplaythrough", onReady);
+        resolve();
+      };
+      first.addEventListener("canplaythrough", onReady);
+    });
+  }
+
   playSfx(name: string): void {
     if (this._muted) return;
     const pool = this.sfxPool.get(name);

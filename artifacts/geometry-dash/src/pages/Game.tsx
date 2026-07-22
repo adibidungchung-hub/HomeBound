@@ -6,7 +6,7 @@ import { createInitialState, jump, update } from "../game/engine";
 import { render } from "../game/renderer";
 import type { GameState } from "../game/types";
 import type { BackgroundImages } from "../game/renderer";
-import { saveLevelProgress } from "../lib/progress";
+import { saveLevelProgress, getLevelProgress } from "../lib/progress";
 import { soundManager } from "../game/sound";
 import { getEquippedSkin } from "../lib/skins";
 import { useLang, T } from "../lib/lang";
@@ -27,7 +27,6 @@ import treesUrl from "@assets/Trees_1781684548660.png";
 import trees1Url from "@assets/Trees-1_1781684548661.png";
 import cloudUrl from "@assets/Cloud_1781684548661.png";
 import floorUrl from "@assets/Floor_1781684548662.png";
-const playerUrl = getEquippedSkin().image;
 import shell1Url from "@assets/Map_1_BEach_1782286950955.png";
 import shell2Url from "@assets/Map_1_BEach_(1)_1782286953057.png";
 import palmTreeUrl from "@assets/Gemini_Generated_Image_n4abpun4abpun4ab-Photoroom_upscayl_4x_r_1783954439742.png";
@@ -267,6 +266,8 @@ export default function Game() {
   const deathProgressRef = useRef(0);
   const deathScoreRef = useRef(0);
   const skinColorRef = useRef(getEquippedSkin().color);
+  // Track whether level 3 was already completed before this session starts
+  const level3PreviouslyCompletedRef = useRef(level === 3 && getLevelProgress(3).completed);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hintFaded, setHintFaded] = useState(false);
   const [lang] = useLang();
@@ -289,11 +290,12 @@ export default function Game() {
   });
 
   useEffect(() => {
+    const equippedSkinUrl = getEquippedSkin().image;
     const seaFrameUrls = [sea1Url, sea2Url, sea3Url, sea4Url, sea5Url, sea6Url, sea7Url, sea8Url];
     Promise.all([
       loadImage(skyUrl), loadImage(sunUrl), loadImage(seaUrl),
       loadImage(treesUrl), loadImage(trees1Url), loadImage(cloudUrl),
-      loadImage(floorUrl), loadImage(playerUrl), loadImage(shell1Url),
+      loadImage(floorUrl), loadImage(equippedSkinUrl), loadImage(shell1Url),
       loadImage(shell2Url), loadImage(palmTreeUrl), loadImage(collectibleUrl),
       loadImage(sky2Url), loadImage(floor2Url), loadImage(tree2Url), loadImage(cloud2Url),
       loadImage("/mushroom.png"),
@@ -302,7 +304,7 @@ export default function Game() {
       loadImage(bg3SkyUrl), loadImage(bg3MountainsUrl), loadImage(bg3HillsUrl), loadImage(bg3CloudsUrl),
       loadImage("/forest-trees-silhouette.png"),
       ...seaFrameUrls.map(loadImage),
-    ]).then(([sky, sun, sea, trees, trees1, cloud, floor, playerRaw, shell1Raw, shell2Raw, palmTreeRaw, collectibleRaw, sky2, floor2, tree2Raw, cloud2Raw, mushroomRaw, rockLowRaw, rockTallRaw, meteorRaw, bgVolcanicRaw, craterRaw, bg3SkyRaw, bg3MountainsRaw, bg3HillsRaw, bg3CloudsRaw, forestTreesRaw, ...seaFrames]) => {
+    ]).then(async ([sky, sun, sea, trees, trees1, cloud, floor, playerRaw, shell1Raw, shell2Raw, palmTreeRaw, collectibleRaw, sky2, floor2, tree2Raw, cloud2Raw, mushroomRaw, rockLowRaw, rockTallRaw, meteorRaw, bgVolcanicRaw, craterRaw, bg3SkyRaw, bg3MountainsRaw, bg3HillsRaw, bg3CloudsRaw, forestTreesRaw, ...seaFrames]) => {
       imagesRef.current = {
         sky, sun, sea,
         seaFrames: seaFrames as HTMLImageElement[],
@@ -328,13 +330,14 @@ export default function Game() {
         bg3Clouds: removeBlackBg(bg3CloudsRaw) as unknown as HTMLImageElement,
         forestTrees: removeWhiteBg(forestTreesRaw),
       };
-      soundManager.loadMusic(
-        level === 3 ? "/music-level3.mp3" : level === 2 ? "/music-level2.mp3" : "/music-level1.mp3"
-      );
-      soundManager.loadSfx("jump", "/sfx-jump.mp3");
-      soundManager.loadSfx("collect", "/sfx-collect.mp3", 4, 1.5);
-      soundManager.loadSfx("complete", "/sfx-complete.mp3");
-      soundManager.loadSfx("btn", "/sfx-btn.mp3", 4, 1.3);
+      const musicSrc = level === 3 ? "/music-level3.mp3" : level === 2 ? "/music-level2.mp3" : "/music-level1.mp3";
+      await Promise.all([
+        soundManager.loadMusicAsync(musicSrc),
+        soundManager.loadSfxAsync("jump", "/sfx-jump.mp3"),
+        soundManager.loadSfxAsync("collect", "/sfx-collect.mp3", 4, 1.5),
+        soundManager.loadSfxAsync("complete", "/sfx-complete.mp3"),
+        soundManager.loadSfxAsync("btn", "/sfx-btn.mp3", 4, 1.3),
+      ]);
       setIsLoaded(true);
       soundManager.playMusic();
     });
@@ -471,8 +474,8 @@ export default function Game() {
           saveLevelProgress(level, 1.0, true, s.score);
           progressSavedRef.current = true;
         }
-        if (levelRef.current === 3) {
-          soundManager.fadeMusic(2000); // slow fade during walk-off
+        if (levelRef.current === 3 && !level3PreviouslyCompletedRef.current) {
+          soundManager.fadeMusic(2000); // slow fade during walk-off → cutscene (first play only)
           // walk-off + fade-to-black is detected below in the loop
         } else {
           soundManager.playSfx("complete");
@@ -480,14 +483,15 @@ export default function Game() {
           setIsComplete(true);
         }
       }
-      // Level 3: detect player walking off right edge → fade to black → show video
-      if (s.isComplete && levelRef.current === 3 && !isEndingRef.current && !fadingToBlackRef.current) {
+      // Level 3: detect player walking off right edge → fade to black → show video (first play only)
+      if (s.isComplete && levelRef.current === 3 && !level3PreviouslyCompletedRef.current && !isEndingRef.current && !fadingToBlackRef.current) {
         const playerRightEdge = PLAYER_X + s.completionPlayerOffsetX + PLAYER_SIZE;
         if (playerRightEdge > CANVAS_WIDTH) {
           fadingToBlackRef.current = true;
           setFadeToBlack(true);
           setTimeout(() => {
             isEndingRef.current = true;
+            level3PreviouslyCompletedRef.current = true; // so replays show win screen
             setIsEndingCutscene(true);
           }, 1500);
         }
